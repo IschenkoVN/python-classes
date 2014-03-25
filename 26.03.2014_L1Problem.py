@@ -66,9 +66,6 @@ def midleIf(a, b, c):
         return bigest(a, b)
 
 
-# Task 2) page 6
-
-
 def midleSorted(a, b, c):
     """
     Fun for cheking.
@@ -94,10 +91,56 @@ def test(fun):
         assert fun(*el) == midleSorted(*el)
 
 
+# Task 2) AOH
+
+def AOH(Str):
+    char_list = list(Str)
+    result_list = []
+    proxy_list = []
+    podrad = 0
+    for index, elem in enumerate(char_list):
+        next_index = index + 1
+        pre_index = index - 1
+        if next_index < len(char_list):
+            if elem == char_list[next_index]:
+                if elem == '#':
+                    if len(result_list) > 0:
+                        proxy_list.append(result_list[-1])
+                else:
+                    proxy_list.append(elem)
+            else:
+                if proxy_list:
+                    result_list.append(proxy_list[0])
+                    proxy_list = []
+    else:
+        if proxy_list:
+            result_list.append(proxy_list[0])
+
+    return ''.join(result_list)
+
+
+def testTas2(fun):
+    assert fun("") == ""
+    assert fun("1") == ""
+    assert fun("11") == "1"
+    assert fun("11111") == "1"
+    assert fun("11#") == "1"
+    assert fun("11##") == "11"
+    assert fun("11122234###55") == "1225"
+    assert fun("4434###311333661") == "44136"
+    assert fun("##11122234###55") == "1225"
+    assert fun("11##11##") == "1111"
+
+
 if __name__ == '__main__':
+
+    # Task 1)
 
     # test midle def
     test(midle)
 
     # test midleIf
     test(midleIf)
+
+    # Task 2)
+    testTas2(AOH)
