@@ -4,29 +4,26 @@
 # Task 1)
 
 
-def bigest(x, y):
+def get_biggest(x, y):
     """
     x, y : int
-    return bigest number
+    return biggest number
     if equal return y
     """
-    if x > y:
-        return x
-    return y
+    return x if x > y else y
 
 
-def smaler(x, y):
+
+def get_smaller(x, y):
     """
     x, y : int
-    return smaler number
+    return smaller number
     if equal return x
     """
-    if x < y:
-        return x
-    return y
+    return x + y - get_biggest(x, y)
 
 
-def midle(a, b, c):
+def get_middle(a, b, c):
     """
     Base fun for finde midle nimber.
     a, b, c: int
@@ -41,7 +38,13 @@ def midle(a, b, c):
     return smaler(x, y)
 
 
-def midleIf(a, b, c):
+def get_middle2(a, b, c):
+    max_v = get_biggest(get_bigest(a, b), c)
+    min_v = get_smallest(get_smallest(a, b), c)
+    return a + b + c - min_v - max_v
+
+
+def middle_if_only(a, b, c):
     """
     Use omly IF statments.
     """
@@ -93,11 +96,11 @@ def test(fun):
 
 # Task 2) AOH
 
-def AOH(Str):
+def decode_AON(data):
     char_list = list(Str)
     result_list = []
     proxy_list = []
-    podrad = 0
+    podrad = 0 # rename, plz
     for index, elem in enumerate(char_list):
         next_index = index + 1
         pre_index = index - 1
