@@ -29,18 +29,18 @@ def get_middle(a, b, c):
     a, b, c: int
     return int
     """
-    x = bigest(a, b)
-    y = bigest(c, a)
+    x = get_biggest(a, b)
+    y = get_biggest(c, a)
     if x == y:
-        x = smaler(a, b)
-        y = smaler(c, a)
-        return bigest(x, y)
-    return smaler(x, y)
+        x = get_smaller(a, b)
+        y = get_smaller(c, a)
+        return get_biggest(x, y)
+    return get_smaller(x, y)
 
 
 def get_middle2(a, b, c):
-    max_v = get_biggest(get_bigest(a, b), c)
-    min_v = get_smallest(get_smallest(a, b), c)
+    max_v = get_biggest(get_biggest(a, b), c)
+    min_v = get_smaller(get_smaller(a, b), c)
     return a + b + c - min_v - max_v
 
 
@@ -62,11 +62,11 @@ def middle_if_only(a, b, c):
 
     # ignore maxi element
     if a == maxi:
-        return bigest(b, c)
+        return get_biggest(b, c)
     if b == maxi:
-        return bigest(a, c)
+        return get_biggest(a, c)
     if c == maxi:
-        return bigest(a, b)
+        return get_biggest(a, b)
 
 
 def midleSorted(a, b, c):
@@ -97,10 +97,9 @@ def test(fun):
 # Task 2) AOH
 
 def decode_AON(data):
-    char_list = list(Str)
+    char_list = list(data)
     result_list = []
     proxy_list = []
-    podrad = 0 # rename, plz
     for index, elem in enumerate(char_list):
         next_index = index + 1
         pre_index = index - 1
@@ -139,11 +138,14 @@ if __name__ == '__main__':
 
     # Task 1)
 
-    # test midle def
-    test(midle)
+    # test get_middle
+    test(get_middle)
 
-    # test midleIf
-    test(midleIf)
+    # test get_middle2
+    test(get_middle2)
+
+    # test get_middle2
+    test(get_middle2)
 
     # Task 2)
-    testTas2(AOH)
+    testTas2(decode_AON)
