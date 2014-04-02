@@ -2,7 +2,7 @@
 # Python-curses Wargaming T2
 
 
-def iter_lines(fd):
+def iter_lines(fname): # fd stands for File Descriptor
     """
     Read file lines.
     fd: filename
@@ -45,20 +45,18 @@ def split_items(iter):
     iter: iterator
     """
     for line in iter:
-        element_list = line.split()
-        for element in element_list:
+        for element in line.split():
             if element.isdigit():
                 # int
                 yield int(element)
             else:
                 try:
-                    float(element)
-                except ValueError, e:
+                    yield float(element)
+                except ValueError:
+                # except ValueError as e:
+                # never use (except ValueError, e) - this may cause a tricky error
                     # str
                     yield element
-                else:
-                    # float
-                    yield float(element)
 
 
 def get_ints(iter):
@@ -67,7 +65,7 @@ def get_ints(iter):
     iter: iterator
     """
     for element in iter:
-        if type(element) == int:
+        if type(element) is int: # use is instead of == to compare with singleton
             yield element
 
 
@@ -78,6 +76,10 @@ def my_sum(element_list):
     """
     return sum(element_list)
 
+
+#
+# THERE SHOULD BE A UNIT-TESTS!
+#
 
 if __name__ == '__main__':
 
