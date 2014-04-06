@@ -1,0 +1,4 @@
+put 4
+put 6
+add
+print

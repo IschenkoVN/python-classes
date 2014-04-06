@@ -1,13 +1,14 @@
 # -*- coding: utf-8 -*-
+__author__ = "Vladislav Ischenko"
 # Python-curses Wargaming T2
 
 
-def iter_lines(fname): # fd stands for File Descriptor
+def iter_lines(filename): # fd stands for File Descriptor
     """
     Read file lines.
-    fd: filename
+    filename: filename
     """
-    with open(fd, "r") as f:
+    with open(filename, "r") as f:
         line = ""
         char = f.read(1)
         while char != "":
@@ -77,20 +78,21 @@ def my_sum(element_list):
     return sum(element_list)
 
 
-#
-# THERE SHOULD BE A UNIT-TESTS!
-#
+#### UNIT-TESTS ####
 
-if __name__ == '__main__':
-
+def UnitTest():
     fd = 'test.txt'
     line = "1 2 3 3.45 abra_cadabra    \n\n12"
     with open(fd, "w") as f:
         f.write(line)
 
-    print list(iter_lines(fd))
-    print list(strip_spaces(iter_lines(fd)))
-    print list(drop_empty(strip_spaces(iter_lines(fd))))
-    print list(split_items(drop_empty(strip_spaces(iter_lines(fd)))))
-    print list(get_ints(split_items(drop_empty(strip_spaces(iter_lines(fd))))))
-    print my_sum(get_ints(split_items(drop_empty(strip_spaces(iter_lines(fd))))))
+    assert list(iter_lines(fd)) == ['1 2 3 3.45 abra_cadabra    ', '', '12']
+    assert list(strip_spaces(iter_lines(fd))) == ['1 2 3 3.45 abra_cadabra', '', '12']
+    assert list(drop_empty(strip_spaces(iter_lines(fd)))) == ['1 2 3 3.45 abra_cadabra', '12']
+    assert list(split_items(drop_empty(strip_spaces(iter_lines(fd))))) == [1, 2, 3, 3.45, 'abra_cadabra', 12]
+    assert list(get_ints(split_items(drop_empty(strip_spaces(iter_lines(fd)))))) == [1, 2, 3, 12]
+    assert my_sum(get_ints(split_items(drop_empty(strip_spaces(iter_lines(fd)))))) == 18
+
+
+if __name__ == '__main__':
+    UnitTest()

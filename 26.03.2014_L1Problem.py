@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-
+__author__ = "Vladislav Ischenko"
 # Python-curses Wargaming 03.2014
 # Task 1)
 
