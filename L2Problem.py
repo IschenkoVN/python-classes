@@ -8,7 +8,7 @@ def iter_lines(filename): # fd stands for File Descriptor
     Read file lines.
     filename: filename
     """
-    with open(filename, "r") as f:
+    with open(filename) as f: # 'r' is default
         line = ""
         char = f.read(1)
         while char != "":
@@ -66,7 +66,7 @@ def get_ints(iter):
     iter: iterator
     """
     for element in iter:
-        if type(element) is int: # use is instead of == to compare with singleton
+        if isinstance(element, int): # :)
             yield element
 
 
