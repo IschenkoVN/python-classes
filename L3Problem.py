@@ -6,18 +6,16 @@ __author__ = "Vladislav Ischenko"
 #### Function style ####
 
 
-def load_code(filename):
+def load_code(filename):  
     """
     Load code from file.
     filename: the name of file
     return: list - statement of forth code.
     """
     with open(filename, "r") as f:
-        statement_list = []
-        for line in f:
-            statement_list.append(line.strip())
-    return statement_list
-
+        # it's impossible to write this function totally correctly, 
+        # this code should not be placed in function, or should receive fd, not filename
+        return [i.strip() for i in f]
 
 def check_syntax(statement_list):
     """
@@ -28,20 +26,17 @@ def check_syntax(statement_list):
     should not be embedded quotes
     return: clean forth code.
     """
-    clean_code = []
     for statement in statement_list:
-        if '#' == statement[0][0]:
+        if statement[0].startswith("#"):
             continue
-        s1 = "\'\'"
-        s2 = "\"\""
-        if s1 in statement or s2 in statement:
-            print 'Error should not be embedded quotes'
+        if "''" in statement or '""' in statement:
+            print 'Error should not be embedded quotes'  # WHY? how to pass empty string?
             break
         else:
-            clean_code.append(statement)
-    return clean_code
+            yield statement
 
 
+# does it really only compiles? looks like it also executes code.
 def compile(clean_code):
     """
     clean_code: list
@@ -61,9 +56,9 @@ def compile(clean_code):
         num: int, float, str
         Convert num to number, else return num (str).
         """
-        if num.isdigit():
+        try:
             return int(num)
-        else:
+        except ValueError:
             try:
                 return float(num)
             except ValueError:
@@ -78,8 +73,8 @@ def compile(clean_code):
         return p
 
     def add():
-        p1 = convert_to_number(pop())
-        p2 = convert_to_number(pop())
+        p1 = convert_to_number(pop()) # conversion should be done during parsing
+        p2 = convert_to_number(pop()) # there should be no extra convertion during executiuon
         p3 = p1 + p2
         put(p3)
         return p3
@@ -88,7 +83,7 @@ def compile(clean_code):
         p1 = convert_to_number(pop())
         p2 = convert_to_number(pop())
         p3 = None
-        if type(p1) is not str or type(p2) is not str:
+        if not (isinstance(p1, str) and isinstance(p2, str)):
             p3 = p1 - p2
             put(p3)
         return p3
@@ -100,7 +95,7 @@ def compile(clean_code):
 
     # flow of execution
     for statement in clean_code:
-        statement = statement.split()
+        statement = statement.split()  # put "I will kill you compiler"
         if statement[0] == 'put':
             compile_result.append(put(statement[1]))
         elif statement[0] == 'pop':
@@ -140,7 +135,7 @@ def make_forth_file(filename, lines):
 #### Unit Tests for Fun ####
 
 
-def UnitTestFun1():
+def unit_test_fun_3(): # CamelCase should be used for classes names only
     filename = 'forth1.txt'
     lines = [
         "put 1",
