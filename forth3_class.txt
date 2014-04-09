@@ -1,4 +1,0 @@
-put 1
-put 3
-sub
-print

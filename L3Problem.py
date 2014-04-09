@@ -3,174 +3,6 @@ __author__ = "Vladislav Ischenko"
 # Python-curses Wargaming 02.04.2014 L3Problem
 
 
-#### Function style ####
-
-
-def load_code(filename):  
-    """
-    Load code from file.
-    filename: the name of file
-    return: list - statement of forth code.
-    """
-    with open(filename, "r") as f:
-        # it's impossible to write this function totally correctly, 
-        # this code should not be placed in function, or should receive fd, not filename
-        return [i.strip() for i in f]
-
-def check_syntax(statement_list):
-    """
-    Check forth code syntax.
-    statement_list: list
-    # - comment
-    each statement begin with new line
-    should not be embedded quotes
-    return: clean forth code.
-    """
-    for statement in statement_list:
-        if statement[0].startswith("#"):
-            continue
-        if "''" in statement or '""' in statement:
-            print 'Error should not be embedded quotes'  # WHY? how to pass empty string?
-            break
-        else:
-            yield statement
-
-
-# does it really only compiles? looks like it also executes code.
-def compile(clean_code):
-    """
-    clean_code: list
-    Statements:
-        put
-        pop
-        add
-        sub
-        print
-    return: last statement result
-    """
-    stack = []
-    compile_result = []
-
-    def convert_to_number(num):
-        """
-        num: int, float, str
-        Convert num to number, else return num (str).
-        """
-        try:
-            return int(num)
-        except ValueError:
-            try:
-                return float(num)
-            except ValueError:
-                return num
-
-    def put(arg):
-        stack.append(arg)
-        return arg
-
-    def pop():
-        p = stack.pop()
-        return p
-
-    def add():
-        p1 = convert_to_number(pop()) # conversion should be done during parsing
-        p2 = convert_to_number(pop()) # there should be no extra convertion during executiuon
-        p3 = p1 + p2
-        put(p3)
-        return p3
-
-    def sub():
-        p1 = convert_to_number(pop())
-        p2 = convert_to_number(pop())
-        p3 = None
-        if not (isinstance(p1, str) and isinstance(p2, str)):
-            p3 = p1 - p2
-            put(p3)
-        return p3
-
-    def fprint():
-        p = pop()
-        print p
-        return p
-
-    # flow of execution
-    for statement in clean_code:
-        statement = statement.split()  # put "I will kill you compiler"
-        if statement[0] == 'put':
-            compile_result.append(put(statement[1]))
-        elif statement[0] == 'pop':
-            compile_result.append(pop())
-        elif statement[0] == 'add':
-            compile_result.append(add())
-        elif statement[0] == 'sub':
-            compile_result.append(sub())
-        elif statement[0] == 'print':
-            compile_result.append(fprint())
-
-    return compile_result[-1]
-
-
-def eval_forth(filename):
-    """
-    Run forth code.
-    filename: name of file with forth code.
-    """
-    forth_code = load_code(filename)
-    clean_code = check_syntax(forth_code)
-    return compile(clean_code)
-
-
-def make_forth_file(filename, lines):
-    """
-    Make file with forth's statements
-    filename: name of file
-    lines: list
-    return: file name
-    """
-    with open(filename, "w") as f:
-        f.write('\n'.join(lines))
-    return filename
-
-
-#### Unit Tests for Fun ####
-
-
-def unit_test_fun_3(): # CamelCase should be used for classes names only
-    filename = 'forth1.txt'
-    lines = [
-        "put 1",
-        "put 3",
-        "add",
-        "print",
-    ]
-    assert eval_forth(make_forth_file(filename, lines)) == 4
-
-
-def UnitTestFun2():
-    filename = 'forth2.txt'
-    lines = [
-        "put 4",
-        "put 6",
-        "add",
-        "print",
-    ]
-    assert eval_forth(make_forth_file(filename, lines)) == 10
-
-
-def UnitTestFun3():
-    filename = 'forth3.txt'
-    lines = [
-        "put 1",
-        "put 3",
-        "sub",
-        "print",
-    ]
-    assert eval_forth(make_forth_file(filename, lines)) == 2
-
-
-#### Class style ####
-
-
 class Error(Exception):
     """
     Base class for exceptions.
@@ -190,32 +22,186 @@ class ParserError(Error):
         return repr(self.msg)
 
 
+#### Function style ####
+
+
+def convert_to_number(num):
+    """
+    num: int, float, str
+    Convert num to number, else return num (str).
+    """
+    try:
+        return int(num)
+    except ValueError:
+        try:
+            return float(num)
+        except ValueError:
+            return num
+
+
+def parse(code_line_list):
+    """
+    Check forth code syntax.
+    code_line_list: list of lines of forth's code.
+    return: None or yield statement.
+    """
+    VALID_STATEMENTS = [
+        "put",
+        "pop",
+        "add",
+        "sub",
+        "print",
+    ]
+
+    for line in code_line_list:
+        if line[0].startswith("#"):
+            continue
+        # We have two or one parameters,
+        # that's why we work only with first and second element.
+
+        items = line.split()
+        if items[0] in VALID_STATEMENTS:
+            if len(items) > 1:
+                yield [items[0], convert_to_number(items[1])]
+            elif len(items) == 1:
+                yield [items[0]]
+        else:
+            raise ParserError('ERROR: Syntax error')
+
+
+def put(stack, arg):
+    stack.append(arg)
+    return arg
+
+
+def pop(stack):
+    result = stack.pop()
+    return result
+
+
+def add(stack):
+    result1 = pop(stack)
+    result2 = pop(stack)
+    try:
+        result = result1 + result2
+    except TypeError:
+        raise ParserError('ERROR: Unsupported operand type(s)')
+    put(stack, result)
+    return result
+
+
+def sub(stack):
+    result1 = pop(stack)
+    result2 = pop(stack)
+    try:
+        result = result1 - result2
+    except TypeError:
+        raise ParserError('ERROR: Unsupported operand type(s)')
+    put(stack, result)
+    return result
+
+
+def fprint(stack):
+    result = pop(stack)
+    print result
+    return result
+
+
+def eval_forth(code_statements):
+    """
+    Run forth code.
+    code_statements: list of lines of forth's code.
+    """
+    stack = []
+    eval_result = []
+
+    for statement in parse(code_statements):
+        if statement[0] == 'put':
+            eval_result.append(put(stack, statement[1]))
+        elif statement[0] == 'pop':
+            eval_result.append(pop(stack))
+        elif statement[0] == 'add':
+            eval_result.append(add(stack))
+        elif statement[0] == 'sub':
+            eval_result.append(sub(stack))
+        elif statement[0] == 'print':
+            eval_result.append(fprint(stack))
+
+    return eval_result[-1]
+
+
+#### Unit Tests for Fun ####
+
+
+def unit_test_fun(filename, lines, answer):
+    """
+    data: dict
+    Exemple od data object:
+        {filename: [lines, answer], }
+    """
+
+    # Make file with forth's statements
+    with open(filename, "w") as f:
+        f.write('\n'.join(lines))
+
+    # Load code
+    with open(filename) as f:
+        code_line_list = [i.strip() for i in f]
+
+    assert eval_forth(code_line_list) == answer
+
+
+#### Class style ####
+
+
 class Parser(object):
     """
     Parsing code.
     """
-    def __init__(self, statement_list):
-        self.statement_list = statement_list
-        self.clean_code = []
+    def __init__(self, code_line_list):
+        self.code_line_list = code_line_list
 
-    def check_syntax(self):
+    def convert_to_number(self, num):
         """
-        statement_list: list
-        Check forth code syntax
-        # - comment
-        each statement begin with new line
-        should not be embedded quotes
+        num: int, float, str
+        Convert num to number, else return num (str).
         """
-        for statement in self.statement_list:
-            if '#' == statement[0][0]:
+        try:
+            return int(num)
+        except ValueError:
+            try:
+                return float(num)
+            except ValueError:
+                return num
+
+    def parse(self):
+        """
+        Check forth code syntax.
+        code_line_list: list of lines of forth's code.
+        return: None or yield statement.
+        """
+        VALID_STATEMENTS = [
+            "put",
+            "pop",
+            "add",
+            "sub",
+            "print",
+        ]
+
+        for line in self.code_line_list:
+            if line[0].startswith("#"):
                 continue
-            s1 = "\'\'"
-            s2 = "\"\""
-            if s1 in statement or s2 in statement:
-                raise ParserError('Error should not be embedded quotes')
+            # We have two or one parameters,
+            # that's why we work only with first and second element.
+
+            items = line.split()
+            if items[0] in VALID_STATEMENTS:
+                if len(items) > 1:
+                    yield [items[0], self.convert_to_number(items[1])]
+                elif len(items) == 1:
+                    yield [items[0]]
             else:
-                self.clean_code.append(statement)
-        return self.clean_code
+                raise ParserError('ERROR: Syntax error')
 
 
 class Compiler(object):
@@ -226,183 +212,116 @@ class Compiler(object):
         self.stack = []
         self.compile_result = []
 
-    def convert_to_number(self, num):
-        """
-        Convert num to number, else return num (str).
-        """
-        if num.isdigit():
-            return int(num)
-        else:
-            try:
-                return float(num)
-            except ValueError:
-                return num
-
     def put(self, arg):
         self.stack.append(arg)
         return arg
 
     def pop(self):
-        anws = self.stack.pop()
-        return anws
+        result = self.stack.pop()
+        return result
 
     def add(self):
-        anws1 = self.convert_to_number(self.pop())
-        anws2 = self.convert_to_number(self.pop())
+        result1 = self.pop()
+        result2 = self.pop()
         try:
-            anws = anws1 + anws2
+            result = result1 + result2
         except TypeError:
-            raise ParserError('Unsupported operand type(s)')
-        self.put(anws)
-        return anws
+            raise ParserError('ERROR: Unsupported operand type(s)')
+        self.put(result)
+        return result
 
     def sub(self):
-        anws1 = self.convert_to_number(self.pop())
-        anws2 = self.convert_to_number(self.pop())
-        anws = None
-        if type(anws1) is str or type(anws2) is str:
-            raise ParserError('Unsupported operand type(s)')
-        else:
-            anws = anws1 - anws2
-            self.put(anws)
-        return anws
+        result1 = self.pop()
+        result2 = self.pop()
+        try:
+            result = result1 - result2
+        except TypeError:
+            raise ParserError('ERROR: Unsupported operand type(s)')
+        self.put(result)
+        return result
 
     def fprint(self):
-        anws = self.pop()
-        print anws
-        return anws
+        result = self.pop()
+        print result
+        return result
 
 
 class Run(object):
-    """
-    Class for run forth code.
-    """
-    def __init__(self, filename, lines):
-        self.filename = filename
-        self.lines = lines
-        self.statement_list = []
-        self.result = []
 
-    def make_forth_file(self):
-        """
-        Make file with forth's statements
-        filename: name of file
-        lines: list
-        return: file name
-        """
-        with open(self.filename, "w") as f:
-            f.write('\n'.join(self.lines))
-        return self.filename
+    def __init__(self, parser, compiler):
+        self.parser = parser
+        self.compiler = compiler
 
-    def load_code(self):
+    def eval_forth(self):
         """
-        Load code from file.
-        filename: the name of file
-        return: list - statement of forth code.
+        Run forth code.
+        code_statements: list of lines of forth's code.
         """
-        with open(self.filename, "r") as f:
-            for line in f:
-                self.statement_list.append(line.strip())
-        return self.statement_list
 
-    def eval_forth(self, clean_code, compiler):
-        """
-        Manager of flow of execution.
-        clean_code: list
-        compiler: Compiler obj.
-        return last statement result.
-        """
-        for statement in clean_code:
-            statement = statement.split()
+        for statement in self.parser.parse():
             if statement[0] == 'put':
-                self.result.append(compiler.put(statement[1]))
+                self.compiler.compile_result.append(self.compiler.put(statement[1]))
             elif statement[0] == 'pop':
-                self.result.append(compiler.pop())
+                self.compiler.compile_result.append(self.compiler.pop())
             elif statement[0] == 'add':
-                self.result.append(compiler.add())
+                self.compiler.compile_result.append(self.compiler.add())
             elif statement[0] == 'sub':
-                self.result.append(compiler.sub())
+                self.compiler.compile_result.append(self.compiler.sub())
             elif statement[0] == 'print':
-                self.result.append(compiler.fprint())
+                self.compiler.compile_result.append(self.compiler.fprint())
 
-        return self.result[-1]
+        return self.compiler.compile_result[-1]
 
 
-#
-#
 #### Unit Tests ####
-#
-#
-
-class UnitTestClass():
-    """
-    For test class.
-    """
-    def __init__(self, filename, lines):
-        self.filename = filename
-        self.lines = lines
-
-    def execute(self):
-        # make file with forth code
-        run = Run(self.filename, self.lines)
-        run.make_forth_file()
-
-        # load forth code
-        run.load_code()
-
-        pars = Parser(run.statement_list)
-
-        # check syntax
-        pars.check_syntax()
-
-        # compile
-        comp = Compiler()
-
-        # eval_forth
-        return run.eval_forth(pars.clean_code, comp)
-
-
-# MAIN
-# Run unit tests
 
 
 if __name__ == '__main__':
 
-    # Unit Test for Fun
-    UnitTestFun1()
-    UnitTestFun2()
-    UnitTestFun3()
-
-    # Test1
-    filename1 = 'forth1_class.txt'
+    # Data
+    filename1 = 'forth1.txt'
     lines1 = [
         "put 1",
         "put 3",
         "add",
         "print",
     ]
+    answer1 = 4
 
-    # Test2
-    filename2 = 'forth2_class.txt'
+    filename2 = 'forth2.txt'
     lines2 = [
         "put 4",
         "put 6",
         "add",
         "print",
     ]
+    answer2 = 10
 
-    filename3 = 'forth3_class.txt'
+    filename3 = 'forth3.txt'
     lines3 = [
         "put 1",
         "put 3",
         "sub",
         "print",
     ]
+    answer3 = 2
 
-    # Unit Test for Class
-    test1 = UnitTestClass(filename1, lines1)
-    assert test1.execute() == 4
-    test2 = UnitTestClass(filename2, lines2)
-    assert test2.execute() == 10
-    test3 = UnitTestClass(filename3, lines3)
-    assert test3.execute() == 2
+    data = [
+        (filename1, lines1, answer1),
+        (filename2, lines2, answer2),
+        (filename3, lines3, answer3),
+    ]
+
+    # Run unit tests for functions style.
+    # for item in data:
+    #     unit_test_fun(*item)
+
+    # Run unit tests for class style.
+    # Load code
+    with open(filename1) as f:
+        code_line_list = [i.strip() for i in f]
+
+    parser = Parser(code_line_list)
+    compiler = Compiler()
+    run = Run(parser, compiler)
+    print run.eval_forth()
