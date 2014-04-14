@@ -44,17 +44,16 @@ class TestSequenceFunctions(unittest.TestCase):
 statistic = {}
 
 
-def time_me(time_func, statistic):
-    statistic['num_calls'] = 0
-    statistic['cum_time'] = 0
-
-    def decorator(func):
+def time_me(time_fn, statdict):
+    def decorator(fn):
         def wrapper(*args, **kwargs):
-            start = time_func()
-            func(*args, **kwargs)
-            end = time_func()
-            statistic['cum_time'] += end - start
-            statistic['num_calls'] += 1
+            start = time_fn()
+            res = fn(*args, **kwargs)
+            end = time_fn()
+            statdict['cum_time'] = statdict.setdefault(
+                'cum_time', 0.0) + (end - start)
+            statdict['num_calls'] = statdict.setdefault('num_calls', 0) + 1
+            return res
         return wrapper
     return decorator
 
@@ -74,7 +73,7 @@ if __name__ == '__main__':
     assert map_rq(fun, sequence) == answer
     assert [elem for elem in map_yield(fun, sequence)] == answer
 
+    print some_func(4, 3), statistic
+
     # Run class unittests
     unittest.main()
-
-    print some_func(4, 3), statistic
