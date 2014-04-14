@@ -69,6 +69,7 @@ def parse(code_line_list):
             raise ParserError('ERROR: Syntax error')
 
 
+@provides("put", 1, 0)
 def put(stack, arg):
     stack.append(arg)
     return arg
@@ -89,22 +90,18 @@ def add(stack):
     put(stack, result)
     return result
 
-
+@privides("sub", 0, 2)
 def sub(stack):
-    result1 = pop(stack)
-    result2 = pop(stack)
-    try:
-        result = result1 - result2
-    except TypeError:
-        raise ParserError('ERROR: Unsupported operand type(s)')
-    put(stack, result)
-    return result
+    put(stack, pop(stack) - pop(stack))
 
-
+@provides("print", 0, 1)
 def fprint(stack):
     result = pop(stack)
     print result
     return result
+
+all_commands = {}
+def provides(cmd_name):
 
 
 def eval_forth(code_statements):
@@ -115,6 +112,7 @@ def eval_forth(code_statements):
     stack = []
     eval_result = []
 
+    try:
     for statement in parse(code_statements):
         if statement[0] == 'put':
             eval_result.append(put(stack, statement[1]))
@@ -153,97 +151,8 @@ def unit_test_fun(filename, lines, answer):
 
 #### Class style ####
 
-
-class Parser(object):
-    """
-    Parsing code.
-    """
-    def __init__(self, code_line_list):
-        self.code_line_list = code_line_list
-
-    def convert_to_number(self, num):
-        """
-        num: int, float, str
-        Convert num to number, else return num (str).
-        """
-        try:
-            return int(num)
-        except ValueError:
-            try:
-                return float(num)
-            except ValueError:
-                return num
-
-    def parse(self):
-        """
-        Check forth code syntax.
-        code_line_list: list of lines of forth's code.
-        return: None or yield statement.
-        """
-        VALID_STATEMENTS = [
-            "put",
-            "pop",
-            "add",
-            "sub",
-            "print",
-        ]
-
-        for line in self.code_line_list:
-            if line[0].startswith("#"):
-                continue
-            # We have two or one parameters,
-            # that's why we work only with first and second element.
-
-            items = line.split()
-            if items[0] in VALID_STATEMENTS:
-                if len(items) > 1:
-                    yield [items[0], self.convert_to_number(items[1])]
-                elif len(items) == 1:
-                    yield [items[0]]
-            else:
-                raise ParserError('ERROR: Syntax error')
-
-
-class Compiler(object):
-    """
-    Compiler for statement.
-    """
-    def __init__(self):
-        self.stack = []
-        self.compile_result = []
-
-    def put(self, arg):
-        self.stack.append(arg)
-        return arg
-
-    def pop(self):
-        result = self.stack.pop()
-        return result
-
-    def add(self):
-        result1 = self.pop()
-        result2 = self.pop()
-        try:
-            result = result1 + result2
-        except TypeError:
-            raise ParserError('ERROR: Unsupported operand type(s)')
-        self.put(result)
-        return result
-
-    def sub(self):
-        result1 = self.pop()
-        result2 = self.pop()
-        try:
-            result = result1 - result2
-        except TypeError:
-            raise ParserError('ERROR: Unsupported operand type(s)')
-        self.put(result)
-        return result
-
-    def fprint(self):
-        result = self.pop()
-        print result
-        return result
+# Переписать класс Command
+# избавится от ифов
 
 
 class Run(object):
@@ -280,13 +189,12 @@ if __name__ == '__main__':
 
     # Data
     filename1 = 'forth1.txt'
-    lines1 = [
+    lines1 = (4, [
         "put 1",
         "put 3",
         "add",
         "print",
-    ]
-    answer1 = 4
+    ])
 
     filename2 = 'forth2.txt'
     lines2 = [
@@ -313,15 +221,5 @@ if __name__ == '__main__':
     ]
 
     # Run unit tests for functions style.
-    # for item in data:
-    #     unit_test_fun(*item)
-
-    # Run unit tests for class style.
-    # Load code
-    with open(filename1) as f:
-        code_line_list = [i.strip() for i in f]
-
-    parser = Parser(code_line_list)
-    compiler = Compiler()
-    run = Run(parser, compiler)
-    print run.eval_forth()
+    for item in data:
+        unit_test_fun(*item)
