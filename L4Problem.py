@@ -22,7 +22,12 @@ def map_yield(fun, sequence):
 
 
 def map_rq_yield(fun, sequence):
-    pass
+    if len(sequence) == 0:
+        yield None
+    else:
+        yield fun(sequence[0])
+        for i in map_rq_yield(fun, sequence[1:]):
+            yield i
 
 
 class TestSequenceFunctions(unittest.TestCase):
@@ -40,6 +45,7 @@ class TestSequenceFunctions(unittest.TestCase):
 
 
 # Second task
+
 
 statistic = {}
 
