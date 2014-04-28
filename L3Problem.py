@@ -69,20 +69,45 @@ def parse(code_line_list):
             raise ParserError('ERROR: Syntax error')
 
 
-@provides("put", 1, 0)
+all_commands = []
+
+
+# def provides(cmd_name):
+#     def wraper(stack, *arg):
+#         return cmd_name
+#     all_commands.append(wraper)
+#     return wraper
+
+
+def provides(cmd_name):
+    def decorator(func):
+        def wraper(*args):
+            all_commands.append([func, args])
+            return func
+        return wraper
+    return decorator
+
+
+@provides("put")
 def put(stack, arg):
     stack.append(arg)
     return arg
 
 
+code_statements = ['put']
+for i in code_statements:
+    print i([], 1)
+
+
+@provides("pop")
 def pop(stack):
     result = stack.pop()
     return result
 
 
+@provides("add")
 def add(stack):
-    result1 = pop(stack)
-    result2 = pop(stack)
+    result1, result2 = pop(stack), pop(stack)
     try:
         result = result1 + result2
     except TypeError:
@@ -90,18 +115,22 @@ def add(stack):
     put(stack, result)
     return result
 
-@privides("sub", 0, 2)
+
+@privides("sub")
 def sub(stack):
     put(stack, pop(stack) - pop(stack))
 
-@provides("print", 0, 1)
-def fprint(stack):
+
+@provides("print")
+def _print(stack):
     result = pop(stack)
     print result
     return result
 
-all_commands = {}
-def provides(cmd_name):
+
+def provides_eval_forth(all_commands):
+    for i in parse(all_commands):
+        i()
 
 
 def eval_forth(code_statements):
@@ -109,10 +138,9 @@ def eval_forth(code_statements):
     Run forth code.
     code_statements: list of lines of forth's code.
     """
-    stack = []
-    eval_result = []
+    stack, eval_result = [], []
 
-    try:
+    # try: !!!!!!! errors here
     for statement in parse(code_statements):
         if statement[0] == 'put':
             eval_result.append(put(stack, statement[1]))
@@ -132,12 +160,6 @@ def eval_forth(code_statements):
 
 
 def unit_test_fun(filename, lines, answer):
-    """
-    data: dict
-    Exemple od data object:
-        {filename: [lines, answer], }
-    """
-
     # Make file with forth's statements
     with open(filename, "w") as f:
         f.write('\n'.join(lines))
@@ -169,7 +191,8 @@ class Run(object):
 
         for statement in self.parser.parse():
             if statement[0] == 'put':
-                self.compiler.compile_result.append(self.compiler.put(statement[1]))
+                self.compiler.compile_result.append(
+                    self.compiler.put(statement[1]))
             elif statement[0] == 'pop':
                 self.compiler.compile_result.append(self.compiler.pop())
             elif statement[0] == 'add':

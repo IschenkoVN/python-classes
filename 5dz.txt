@@ -1,0 +1,49 @@
+
+1) RPC
+
+Написать модуль rpc, который позволит делать удаленный вызов процедур.
+
+Пример использования:
+
+# server
+import rpc
+s = rpc.Server(transport_string)
+def test(x, y):
+    return x + y
+
+s.register(test)
+s.serve_forever()
+
+
+
+# client
+import rpc
+c = rpc.Client(transport_string)
+assert 3 == c.test(1, 2)
+
+Сервер и клиент должны исполняться на разных машинах. Транспорт для
+передачи данных можете использовать по своему усмотрению
+
+2) ORM. Написать модуль, превращающий выражения над python объектами
+в sql запросы.
+
+import orm
+
+t1 = orm.Table("user")
+t2 = orm.Table("city")
+print orm.select(t1.name, t2.name).where(t1.id==1, t2.id==t1.city_id)
+
+>>> select user.name, city.name from user, city where user.id=1 and user.city_id=city.id
+
+orm.select - принимает список переменное число полей
+orm.select(...).where принимает переменное число условий вида
+поле == поле | константа
+
+На выходе получает запрос вида
+
+
+select СПИСОК_ПОЛЕЙ from СПИСОК_ТАБЛИЦ where ВСЕ_УСЛОВИЯ_ЧЕРЕЗ_AND
+
+
+Спасибо
+

@@ -1,0 +1,57 @@
+Добрый день. В задании опечатка - вызываться для подсчета статистики должны функция some_func:
+
+   import time
+
+    statistic = {}
+
+    def time_me(time_func, statistic):
+        .....
+
+    @time_me(time.time, statistic)
+    def some_func(x, y):
+        time.sleep(1.1)
+
+    some_func(1, 2)
+    some_func(1, 2)
+
+    assert statistic['num_calls'] == 2
+    assert 2.5 > statistic['cum_time'] > 2
+
+Спасибо
+
+
+
+Всем привет
+
+4е дз -
+
+1) Написать аналош встроенной функции map следующими способами: рекурсивным (map_rq),
+        на генераторе (map_yield) и рекурсивно на генераторе(map_rq_yield).
+        Рекурсивные функции должны обрабатывать не более одного элемента на шаг рекурсии.
+        Функции-генераторы должны обрабатывать элементы по мере запроса значений генератора.
+
+2)     Написать декоратор time_me, который делает профилирование функции,
+        используя заданную функцию времени. Вторым параметром в time_me передается словарь,
+        который нужно обновлять с каждым вызовом. В его елемент 'num_calls' нужно
+        заносить количество вызовов, в его элемент 'cum_time' суммарное время.
+Пример использования:
+
+    import time
+
+    statistic = {}
+
+    def time_me(time_func, statistic):
+        .....
+
+    @time_me(time.time, statistic)
+    def som_func(x, y):
+        time.sleep(1.1)
+
+    time_me(1, 2)
+    time_me(1, 2)
+
+    assert statistic['num_calls'] == 2
+    assert 2.5 > statistic['cum_time'] > 2
+
+
+Спасибо
