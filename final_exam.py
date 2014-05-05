@@ -37,9 +37,14 @@ def print_table(data):
     if not data:
         return ''
     # Find element with max len in data.
+    # в задании не говориться, что значения - только строки
+    # каждая колонка должна именть свою ширину
+    # эта строка совершенно не читаема, например нельзя просто взглянув на нее понять
+    # какой функции накоторый параметр
     column_width = len(max(max([max(
         elem_list, key=len) for elem_list in data.itervalues()], key=len), max(
             data.keys(), key=len), key=len))
+            
     # First and last row of table.
     separator = '+' + '+'.join(
         ['-' * (column_width + 2) for key in data.keys()]) + '+'
@@ -79,6 +84,9 @@ Solutions:
 The Algorithm "Top-Down Parsing"
 
 """
+
+# способ передачи состояния через глобальную переменную 
+# как раз пример того, где глобальные переменные применяться не должны никогда
 
 
 token_pat = re.compile("\s*(?:(\d*\.\d+|\d+)|(.))")
